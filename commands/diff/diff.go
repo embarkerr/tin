@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -195,6 +196,12 @@ func outputDiff(diff []delta) {
 	insert := "\033[48;2;64;89;67;32m"
 	equals := "\033[39;0m"
 
+	fileName := ".diffout"
+	diffOut, err := os.Create(fileName)
+	if err != nil {
+		log.Fatalf("[ ERROR ] Couldn't create diffout file: %s\n", err.Error())
+	}
+
 	for _, d := range diff {
 		var colour string
 		var tag string
@@ -212,6 +219,30 @@ func outputDiff(diff []delta) {
 		default:
 		}
 
-		log.Printf("%s%s %s %s    %s%s\n", colour, tag, d.old(), d.new(), d.text(), equals)
+		// log.Printf("%s%s %s %s    %s%s\n", colour, tag, d.old(), d.new(), d.text(), equals)
+		diffString := fmt.Sprintf("%s%s %s %s    %s%s\n", colour, tag, d.old(), d.new(), d.text(), equals)
+		_, err := diffOut.WriteString(diffString)
+		if err != nil {
+			log.Fatalf("[ ERROR ] Could not write to diffout file: %s\n", err.Error())
+		}
+	}
+
+	if err := diffOut.Close(); err != nil {
+		log.Fatal(err.Error())
+	}
+
+	cmd := exec.Command("less", "-f", "-R", "-F", "-X", fileName)
+	cmd.Stdout = os.Stdout
+
+	if err := cmd.Start(); err != nil {
+		log.Fatal(err.Error())
+	}
+
+	if err := cmd.Wait(); err != nil {
+		log.Fatal(err.Error())
+	}
+
+	if err := os.Remove(fileName); err != nil {
+		log.Fatal(err.Error())
 	}
 }
