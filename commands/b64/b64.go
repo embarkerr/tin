@@ -10,11 +10,12 @@ import (
 )
 
 type Base64Command struct {
-	fs         *flag.FlagSet
-	decode     bool
-	fileInput  string
-	fileOutput string
-	help       bool
+	fs          *flag.FlagSet
+	decode      bool
+	urlEncoding bool
+	fileInput   string
+	fileOutput  string
+	help        bool
 }
 
 func Execute(args []string) {
@@ -23,21 +24,12 @@ func Execute(args []string) {
 	base64Command.fs.BoolVar(&base64Command.decode, "d", false, "Provide -d to decode")
 	base64Command.fs.StringVar(&base64Command.fileInput, "f", "", "Provide the -f flag to read from input file")
 	base64Command.fs.StringVar(&base64Command.fileOutput, "o", "", "Provide the -o flag to write the result to a file")
+	base64Command.fs.BoolVar(&base64Command.urlEncoding, "u", false, "Provide the -u flag to use base64Url encoding")
 	base64Command.fs.BoolVar(&base64Command.help, "h", false, "Help")
 	base64Command.fs.Parse(args)
 
 	if base64Command.help {
-		fmt.Printf("Base64 Encoder / Decoder\n" +
-			"Usage:\n\t`sn b64 [-flags] [input]`\n\n" +
-			"[-flags]:\n" +
-			"\t-d\tdecode input (encode is default)\n" +
-			"\t-f\tread input from file, provide file name to read from after flag\n" +
-			"\t-o\twrite output to file, provide file name to write to after flag\n" +
-			"\t-h\thelp\n\n" +
-			"[input]:\n" +
-			"\tstring input to encode/decode\n" +
-			"\tif -f flag is provided, input becomes file to read input from\n" +
-			"\tmake sure to escape special characters with `\\` where required.\n")
+		printHelp()
 		return
 	}
 
@@ -60,13 +52,25 @@ func Execute(args []string) {
 	// perform encode / decode
 	var output string
 	if base64Command.decode {
-		decode, err := base64Decode(input)
+		var decode string
+		var err error
+		if base64Command.urlEncoding {
+			decode, err = base64UrlDecode(input)
+		} else {
+			decode, err = base64Decode(input)
+		}
+
 		if err != nil {
 			log.Fatalf("[ ERROR ] Could not decode '%s': %s\n", input, err.Error())
 		}
 		output = decode
 	} else {
-		encode := base64Encode(input)
+		var encode string
+		if base64Command.urlEncoding {
+			encode = base64UrlEncode(input)
+		} else {
+			encode = base64Encode(input)
+		}
 		output = encode
 	}
 
@@ -88,4 +92,27 @@ func base64Encode(input string) string {
 func base64Decode(input string) (string, error) {
 	data, err := base64.StdEncoding.DecodeString(input)
 	return string(data), err
+}
+
+func base64UrlEncode(input string) string {
+	return base64.RawURLEncoding.EncodeToString([]byte(input))
+}
+
+func base64UrlDecode(input string) (string, error) {
+	data, err := base64.RawURLEncoding.DecodeString(input)
+	return string(data), err
+}
+
+func printHelp() {
+	fmt.Printf("Base64 Encoder / Decoder\n" +
+		"Usage:\n\t`sn b64 [-flags] [input]`\n\n" +
+		"[-flags]:\n" +
+		"\t-d\tdecode input (encode is default)\n" +
+		"\t-f\tread input from file, provide file name to read from after flag\n" +
+		"\t-o\twrite output to file, provide file name to write to after flag\n" +
+		"\t-h\thelp\n\n" +
+		"[input]:\n" +
+		"\tstring input to encode/decode\n" +
+		"\tif -f flag is provided, input becomes file to read input from\n" +
+		"\tmake sure to escape special characters with `\\` where required.\n")
 }
