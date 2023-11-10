@@ -52,6 +52,12 @@ func (d *delta) text() string {
 }
 
 func Execute(args []string) {
+	if len(args) == 1 && args[0] == "-h" {
+		fmt.Printf("Diff Tool\n" +
+			"Usage:\n\t`sn diff [file1] [file2]`\n")
+		return
+	}
+
 	if len(args) != 2 {
 		log.Fatalf("[ ERROR ] Incorrect number of arguments.\n" +
 			"Usage is `sn diff [file1] [file2]`")
@@ -219,7 +225,6 @@ func outputDiff(diff []delta) {
 		default:
 		}
 
-		// log.Printf("%s%s %s %s    %s%s\n", colour, tag, d.old(), d.new(), d.text(), equals)
 		diffString := fmt.Sprintf("%s%s %s %s    %s%s\n", colour, tag, d.old(), d.new(), d.text(), equals)
 		_, err := diffOut.WriteString(diffString)
 		if err != nil {

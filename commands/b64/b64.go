@@ -3,8 +3,10 @@ package b64
 import (
 	"encoding/base64"
 	"flag"
+	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 type Base64Command struct {
@@ -12,6 +14,7 @@ type Base64Command struct {
 	decode     bool
 	fileInput  string
 	fileOutput string
+	help       bool
 }
 
 func Execute(args []string) {
@@ -20,7 +23,23 @@ func Execute(args []string) {
 	base64Command.fs.BoolVar(&base64Command.decode, "d", false, "Provide -d to decode")
 	base64Command.fs.StringVar(&base64Command.fileInput, "f", "", "Provide the -f flag to read from input file")
 	base64Command.fs.StringVar(&base64Command.fileOutput, "o", "", "Provide the -o flag to write the result to a file")
+	base64Command.fs.BoolVar(&base64Command.help, "h", false, "Help")
 	base64Command.fs.Parse(args)
+
+	if base64Command.help {
+		fmt.Printf("Base64 Encoder / Decoder\n" +
+			"Usage:\n\t`sn b64 [-flags] [input]`\n\n" +
+			"[-flags]:\n" +
+			"\t-d\tdecode input (encode is default)\n" +
+			"\t-f\tread input from file, provide file name to read from after flag\n" +
+			"\t-o\twrite output to file, provide file name to write to after flag\n" +
+			"\t-h\thelp\n\n" +
+			"[input]:\n" +
+			"\tstring input to encode/decode\n" +
+			"\tif -f flag is provided, input becomes file to read input from\n" +
+			"\tmake sure to escape special characters with `\\` where required.\n")
+		return
+	}
 
 	// parse input
 	var input string
@@ -30,8 +49,9 @@ func Execute(args []string) {
 			log.Fatalf("[ ERROR ] Could not read file '%s': %s\n", base64Command.fileInput, err.Error())
 		}
 		input = string(data)
-	} else if base64Command.fs.NArg() == 1 {
-		input = base64Command.fs.Args()[0]
+	} else if base64Command.fs.NArg() > 0 {
+		log.Printf("%v\n", base64Command.fs.Args())
+		input = strings.Join(base64Command.fs.Args(), " ")
 	} else {
 		log.Fatalf("[ ERROR ] Input is required to perform base64 conversions.\n" +
 			"Usage is `sn [operation] [-flags] [input]`.\n")
