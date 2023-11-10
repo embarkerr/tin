@@ -10,6 +10,7 @@ Supported flag are:
 - `-d` decode the input (encode is default)
 - `-f` read a file as the input
 - `-o` write result to output file
+- `-u` use base64URL encoding and decoding
 - `-h` help
 
 ### Examples
