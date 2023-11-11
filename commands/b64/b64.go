@@ -18,7 +18,7 @@ type Base64Command struct {
 	help        bool
 }
 
-func Execute(args []string) {
+func Execute(args []string) string {
 	// read flags
 	base64Command := Base64Command{fs: flag.NewFlagSet("b64", flag.ExitOnError)}
 	base64Command.fs.BoolVar(&base64Command.decode, "d", false, "Provide -d to decode")
@@ -30,7 +30,7 @@ func Execute(args []string) {
 
 	if base64Command.help {
 		printHelp()
-		return
+		return ""
 	}
 
 	// parse input
@@ -42,11 +42,11 @@ func Execute(args []string) {
 		}
 		input = string(data)
 	} else if base64Command.fs.NArg() > 0 {
-		log.Printf("%v\n", base64Command.fs.Args())
 		input = strings.Join(base64Command.fs.Args(), " ")
 	} else {
-		log.Fatalf("[ ERROR ] Input is required to perform base64 conversions.\n" +
+		fmt.Printf("[ ERROR ] Input is required to perform base64 conversions.\n" +
 			"Usage is `sn [operation] [-flags] [input]`.\n")
+		os.Exit(1)
 	}
 
 	// perform encode / decode
@@ -83,6 +83,8 @@ func Execute(args []string) {
 	} else {
 		log.Printf("Output:\n%s\n", output)
 	}
+
+	return output
 }
 
 func base64Encode(input string) string {
