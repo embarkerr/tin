@@ -81,7 +81,7 @@ func Execute(args []string) string {
 			log.Fatalf("[ ERROR ] Failed to write to file %s\nOutput was: %s\n", base64Command.fileOutput, output)
 		}
 	} else {
-		log.Printf("Output:\n%s\n", output)
+		fmt.Printf("Output:\n%s\n", output)
 	}
 
 	return output
@@ -112,6 +112,7 @@ func printHelp() {
 		"\t-d\tdecode input (encode is default)\n" +
 		"\t-f\tread input from file, provide file name to read from after flag\n" +
 		"\t-o\twrite output to file, provide file name to write to after flag\n" +
+		"\t-u\tuse Base64URL encoding and decoding\n" +
 		"\t-h\thelp\n\n" +
 		"[input]:\n" +
 		"\tstring input to encode/decode\n" +
