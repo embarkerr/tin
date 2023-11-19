@@ -42,8 +42,8 @@ Supported flags are:
 - `-h` help
 
 Arguments:
-`time` argument supports both 12-hour and 24-hour formats
-`date` argument format is `dd/mm/yyyy`
+- `time` argument supports both 12-hour and 24-hour formats
+- `date` argument format is `dd/mm/yyyy`
 
 ### Examples
 ```bash
